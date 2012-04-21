@@ -22,48 +22,51 @@ EXAMPLES
   We are looking at a log file of computers identified by their ip addresses
   It might look like this:
 
-    IP-ADDRESS 10.10.10.10
-    OS: xp
-    VULNS: Isn't running free software
-    IP-ADDRESS 42.42.42.42
-    OS: linux
-    VULNS: None
-    IP-ADDRESS 1.2.3.4
-    OS: mac
-    VULNS: High risk of social engineering through confident users
+    Nmap scan report for walmart (192.168.1.71)
+    Host is up (0.00032s latency).
+    Not shown: 999 closed ports
+    PORT     STATE SERVICE
+    3000/tcp open  ppp
 
-  Each computer has its operating system defined, xp, vista, ubuntu
-  Each computer has a list of secuirty holes like: VULNS: Default SSH Port, No pass
+    Nmap scan report for homeportal (192.168.1.254)
+    Host is up (0.042s latency).
+    Not shown: 998 closed ports
+    PORT    STATE SERVICE
+    80/tcp  open  http
+    443/tcp closed  https
 
+  Each computer has latency as well as closed and open ports. 
+  Each block of text starts with the word Nmap.
 
-  We want to list the security holes of computers that aren't running xp
+  We might want to list the machines that have port 80/tcp open.
 
-  ./blocks.pl --term xp --no-match --delim IP-ADDRESS --data 'VULNS:(.*)'
-    None
-    High risk of social engineering through confident users
+  ./blocks.pl --delim Nmap --term '80/tcp  open'
 
-
-  We want to list the blocks of text associated with computers that aren't running xp
-
-  ./blocks.pl --term xp --no-match --delim IP-ADDRESS trialfile
-    IP-ADDRESS 42.42.42.42
-    OS: linux
-    VULNS: None
-    IP-ADDRESS 1.2.3.4
-    OS: mac
-    VULNS: High risk of social engineering through confident users
+    Nmap scan report for homeportal (192.168.1.254)
+    Host is up (0.042s latency).
+    Not shown: 998 closed ports
+    PORT    STATE SERVICE
+    80/tcp  open  http
+    443/tcp closed  https
 
 
-  We want to list the ips from each block of text
+  We might want to extract the IP from every block using a regex.
 
-  ./blocks.pl --delim IP-ADDRESS --data 'IP-ADDRESS (.*)' trialfile
-    10.10.10.10
-    42.42.42.42
-    1.2.3.4
+  ./blocks.pl --delim=Nmap --data='Nmap scan report for .* \((.*)\)'
+
+    192.168.1.71
+    192.168.1.254
+
+  We might want to extract the IP from every block that has port 80 open.
+
+  ./blocks.pl --delim=Nmap --term '80/tcp  open' --data='Nmap scan report for .* \((.*)\)'
+
+    192.168.1.254
 
 
 AUTHOR
   Written by James Koval
+  Documented by David Odell
 REPORTING BUGS
   Report bugs to <jediknight304 () gmail . com>
 COPYRIGHT
