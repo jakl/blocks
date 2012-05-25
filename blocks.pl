@@ -24,8 +24,8 @@ use subs qw(printMatchOrInverse printDataOrBlock);
 my $term='.';#Term to search for in a block of text to validate the block
 my $match=1; #Either match the term, or inverse match it, getting every block of text except for those containing term
 my $delim;   #Delimiter at the heading of each block of text
-my $data=0;  #Data member to show from within the block of text, rather than the entire thing
-GetOptions('data=s' => \$data, 'match!' => \$match,'term=s' => \$term,'delim=s' => \$delim);
+my @data;  #Data member to show from within the block of text, rather than the entire thing
+GetOptions('data=s' => \@data, 'match!' => \$match,'term=s' => \$term,'delim=s' => \$delim);
 if(!$delim){#require delimiter
 print <<EOF;
 NAME
@@ -44,6 +44,7 @@ OPTIONS
   --delim     -de : Delimit the blocks of text by this header line (REQUIRED)
                        delimiter header line is included in the block
   --data      -da : Find and print only this bit of data (regex formatted)
+                       Can specify multiple times for many matches
 
   Option names may be shorter unique abbreviations of the full names shown above
   Full or abbreviated options may be preceded by one - or two -- dashes
@@ -83,7 +84,7 @@ EXAMPLES
     OS: mac
     VULNS: High risk of social engineering through confident users
 
-    
+
   We want to list the ips from each block of text
 
   $0 --delim IP-ADDRESS --data 'IP-ADDRESS (.*)' trialfile
@@ -111,7 +112,7 @@ my $block;
 while(<>){
   if(/$delim/){#find a starting delimiter
     #print and reset the current working block of text
-    printMatchOrInverse $match, $block, $term, $data;
+    printMatchOrInverse $match, $block, $term, @data;
     $block = $_;
   }
   else{
@@ -121,13 +122,19 @@ while(<>){
 }
 
 #repeat at end of file without needing a final delimiter
-printMatchOrInverse $match, $block, $term, $data;
+printMatchOrInverse $match, $block, $term, @data;
 
 sub printDataOrBlock{
-  my $data = shift;
   my $block = shift;
-  if ($data){
-    print $1."\n" if $block =~ /$data/i;
+  my @data = @_;
+  if (@data){
+    my @output;
+    for my $capture(@data){
+      if(my @captures = $block =~ /$capture/i){
+        push @output, @captures
+      }
+    }
+    print join(',',@output) . "\n" if @output;
   }else{
     print $block ;
   }
@@ -137,15 +144,15 @@ sub printMatchOrInverse{
   my $match = shift;
   my $block = shift;
   my $term = shift;
-  my $data = shift;
+  my @data = @_;
   if($block){#if previously saved block of text
     if($match){ #If the user wants to match, rather than inverse match
       if ($block =~ /$term/i){
-        printDataOrBlock $data, $block;
+        printDataOrBlock $block, @data;
       }
     }else{#inverse match
       unless ($block =~ /$term/i){
-        printDataOrBlock $data, $block;
+        printDataOrBlock $block, @data;
       }
     }
   }
