@@ -130,7 +130,7 @@ sub printDataOrBlock{
   if (@data){
     my @output;
     for my $capture(@data){
-      if(my @captures = $block =~ /$capture/i){
+      if(my @captures = $block =~ /$capture/msi){
         push @output, @captures
       }
     }
@@ -147,11 +147,11 @@ sub printMatchOrInverse{
   my @data = @_;
   if($block){#if previously saved block of text
     if($match){ #If the user wants to match, rather than inverse match
-      if ($block =~ /$term/i){
+      if ($block =~ /$term/msi){
         printDataOrBlock $block, @data;
       }
     }else{#inverse match
-      unless ($block =~ /$term/i){
+      unless ($block =~ /$term/msi){
         printDataOrBlock $block, @data;
       }
     }
